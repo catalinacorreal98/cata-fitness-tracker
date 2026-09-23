@@ -1,0 +1,22 @@
+{
+  "name": "cata-fitness-tracker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env.local scripts/dev.js",
+    "test": "node --test test/*.test.js",
+    "build": "node scripts/check.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "jose": "^6.1.0",
+    "luxon": "^3.7.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8"
+  }
+}
