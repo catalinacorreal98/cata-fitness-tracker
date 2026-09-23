@@ -46,6 +46,10 @@ Generate each of the three secrets independently on your computer using `node -e
 
 The current week starts Monday; the month is a calendar month, both Toronto time. Classes count as completed only after they end. Future and ongoing classes remain upcoming. Each class counts once; progress percentages cap at 100%, while actual counts can exceed goals. Goals apply to this period and future periods, with past snapshots preserved. Manual activities are saved separately from synced events. Under Goals → Class matching, adjust words used to recognize fitness classes; rules apply on the next successful sync. Review matches after first connection.
 
+## Monthly view
+
+The Monthly tab shows the current Toronto calendar month. It opens on Completed, using the same completion timestamp and event set as the overview's monthly count. Upcoming and All filters update both the activity chart and chronological list. Calendar classes and manual entries are included. Each activity uses the same color in the weekly chart, monthly chart and monthly row accents. The view reads the existing saved calendar cache; it does not introduce additional Calendar API requests or permissions.
+
 ## Saved goals
 
 Weekly and monthly goals are independent values in Postgres, keyed by period type and start date in Toronto time. For example, the September 21–27 week is stored as `week / 2026-09-21`, while September is `month / 2026-09-01`. A unique primary key guarantees one target per period. Saving September first as 4 and later as 6 updates the same record to 6; no revision history is recorded. Monthly targets are never calculated from weekly targets.

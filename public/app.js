@@ -1,7 +1,8 @@
+import { monthlyMarkup, ACTIVITY_COLORS } from './monthly.js';
 const $=selector=>document.querySelector(selector);
 const TYPES=['HIIT','Yoga','Cycling','Pilates','Strength','Run','Other'];
-const colors={HIIT:'var(--accent)',Yoga:'var(--purple)',Cycling:'var(--orange)',Pilates:'var(--accent)',Strength:'var(--accent)',Run:'var(--accent)',Other:'var(--sub)'};
-let data,tab='overview',busy=false,goalsDirty=false;
+const colors=ACTIVITY_COLORS;
+let data,tab='overview',busy=false,goalsDirty=false,monthFilter='completed';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dateLabel=(date,options={month:'short',day:'numeric'})=>new Intl.DateTimeFormat('en-CA',{...options,timeZone:'America/Toronto'}).format(new Date(date.length===10?date+'T12:00:00-04:00':date));
 const timeLabel=date=>new Intl.DateTimeFormat('en-CA',{hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:'America/Toronto'}).format(new Date(date));
@@ -21,9 +22,21 @@ function showSignedOut(configured){
 }
 function metric(title,label,s){const percent=s.percentage??0;return `<section class="panel"><div class="row"><h2>${title}</h2><span class="small">${label}</span></div><div class="metricbody"><div><div class="big">${s.completed} <span>/ ${s.target??'—'}</span></div><div class="small">Classes completed</div></div><div class="ring" role="img" aria-label="${s.target?percent+'% of '+s.target+'-class goal':'Goal not set'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="51" fill="none" stroke="var(--track)" stroke-width="9"/><circle cx="60" cy="60" r="51" fill="none" stroke="#e65b98" stroke-width="9" stroke-linecap="round" stroke-dasharray="${320.442*percent/100} 320.442"/></svg><div class="ringtext"><strong>${s.target?percent+'%':'—'}</strong><span class="small">of goal</span></div></div></div><div class="foot"><span><b>${s.upcoming}</b> upcoming</span><span>${s.target?(s.remaining?'<b>'+s.remaining+'</b> to your goal':'Goal reached'):'<button type="button" data-set-goal>Set goal</button>'}</span></div></section>`;}
 function showTab(value){tab=value;document.querySelectorAll('[data-view]').forEach(e=>e.hidden=e.dataset.view!==tab);document.querySelectorAll('[data-tab]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.tab===tab)));$('#motion-add').hidden=tab!=='overview';}
+function renderMonthly(){
+  $('#monthly-period').textContent=dateLabel(data.periods.month,{month:'long',year:'numeric'});
+  $('#monthly-content').innerHTML=monthlyMarkup(data.monthEvents||[],monthFilter);
+  document.querySelectorAll('[data-month-filter]').forEach(button=>{
+    const status=button.dataset.monthFilter;
+    const count=(data.monthEvents||[]).filter(e=>status==='all'||(status==='completed'?e.completed:!e.completed)).length;
+    button.textContent=({completed:'Completed',upcoming:'Upcoming',all:'All'})[status]+' · '+count;
+    button.setAttribute('aria-pressed',String(status===monthFilter));
+  });
+}
+document.querySelectorAll('[data-month-filter]').forEach(button=>button.onclick=()=>{monthFilter=button.dataset.monthFilter;renderMonthly();});
 function render(){
   if(!data?.authenticated)return showSignedOut(data?.configured);
   $('#welcome').hidden=true;$('#workspace').hidden=false;$('#navigation').hidden=false;$('#refresh').hidden=false;$('#reconnect').hidden=false;$('#sign-out').hidden=false;showTab(tab);
+  renderMonthly();
   $('#connection-status').textContent=data.error?'Needs attention':data.connected?'Calendar connected':'Not connected';
   $('#last-sync').textContent='Last synced with Google Calendar · '+(data.lastSync?dateLabel(data.lastSync,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'Not yet synced');
   const days=data.periods.days,range=dateLabel(days[0])+' – '+dateLabel(days[6]);
